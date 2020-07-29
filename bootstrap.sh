@@ -85,6 +85,41 @@ if [[ ${master_settings_missing} == "true" ]]; then
   done
 fi
 
+# Create Elasticsearch snapshot repository
+if ! curl localhost:9200/_snapshot?pretty | grep $BACKUP_REPOSITORY; then
+
+  curl -XPUT localhost:9200/_snapshot/$BACKUP_REPOSITORY?pretty -H 'Content-Type: application/json' --data-binary @- << EOF
+  {
+    "type": "gcs",
+    "settings": {
+      "bucket": "${BACKUP_REPOSITORY}",
+      "base_path": "es_backup"
+    }
+  }
+EOF
+fi
+
+
+# Create snapshot lifecycle management policy
+if ! curl localhost:9200/_slm/policy/?pretty | grep nightly-snapshots; then
+
+  curl -XPUT localhost:9200/_slm/policy/nightly-snapshots?pretty -H 'Content-Type: application/json' --data-binary @- << EOF
+  {
+    "schedule": "0 30 1 * * ?",
+    "name": "<nightly-snap-{now/d}>",
+    "repository": "${BACKUP_REPOSITORY}",
+    "config": {
+      "indices": ["*"]
+    },
+    "retention": {
+      "expire_after": "20d",
+      "min_count": 5,
+      "max_count": 50
+    }
+  }
+EOF
+fi
+
 systemctl enable elasticsearch.service
 
 if [[ -f /tmp/elasticsearch_bootstrap_start.log ]]; then

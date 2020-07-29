@@ -104,7 +104,13 @@ variable "cluster_endpoint" {
 }
 
 variable "add_random_suffix" {
-  description = "Add random suffix to all resources with possible duplicates if the same modul is deployed multiple times"
+  description = "Add random suffix to all resources with possible duplicates if the same module is deployed multiple times"
   default     = false
   type        = bool
+}
+
+variable "backup_repository_name" {
+  description = "Name of Elasticsearch backup repository. There must be GCS bucket with same name in GCP project where we deploy"
+  type        = string
+  default     = ""
 }

@@ -26,7 +26,8 @@ locals {
       "${var.instance_name}-${i}"
     ]
   )
-  suffix = var.add_random_suffix ? "-${random_string.es_name_suffix[0].result}" : ""
+  suffix            = var.add_random_suffix ? "-${random_string.es_name_suffix[0].result}" : ""
+  backup_repository = var.backup_repository_name == "" ? "${var.project}-backups" : var.backup_repository_name
 }
 
 resource "google_service_account" "elasticsearch_backup" {
@@ -95,6 +96,7 @@ resource "google_compute_instance" "elasticsearch" {
 #!/bin/bash
 
 export MASTER_LIST=${local.master_list}
+export BACKUP_REPOSITORY=${local.backup_repository}
 
 base64 -d <<< "${base64encode(local.elasticsearch_configuration)}" > /tmp/elasticsearch.yml
 base64 -d <<< "${google_service_account_key.elasticsearch_backup.private_key}" > /tmp/backup-sa.key
