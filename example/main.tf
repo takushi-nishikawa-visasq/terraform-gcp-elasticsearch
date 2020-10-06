@@ -32,11 +32,10 @@ module "elasticsearch_prod" {
   namespace = var.namespace
 
   cluster_ca_certificate = module.gke.cluster_ca_certificate
-  cluster_user           = module.gke.cluster_username
-  cluster_password       = module.gke.cluster_password
+  cluster_token          = module.gke.access_token
   cluster_endpoint       = module.gke.endpoint
 
-  allowed_ipv4_subnets = [module.gke.cluster_ipv4_cidr]
+  allowed_ipv4_subnets   = [module.gke.cluster_ipv4_cidr]
 }
 
 module "elasticsearch_second_prod" {
@@ -54,12 +53,11 @@ module "elasticsearch_second_prod" {
   namespace = var.namespace
 
   cluster_ca_certificate = module.gke.cluster_ca_certificate
-  cluster_user           = module.gke.cluster_username
-  cluster_password       = module.gke.cluster_password
+  cluster_token          = module.google_client_config.default.access_token
   cluster_endpoint       = module.gke.endpoint
 
-  allowed_ipv4_subnets = [module.gke.cluster_ipv4_cidr]
-  add_random_suffix    = true
+  allowed_ipv4_subnets   = [module.gke.cluster_ipv4_cidr]
+  add_random_suffix      = true
 
   load_balancer_subnetwork = "192.168.254.0/24"
 }
